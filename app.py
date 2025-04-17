@@ -3,11 +3,11 @@ import os
 import cv2
 import numpy as np
 import pytesseract
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
-app = Flask(__name__, static_folder='build', static_url_path='/')
+app = Flask(__name__, template_folder='templates', static_folder='static')
 CORS(app)
 
 UPLOAD_FOLDER = 'uploads'
@@ -35,9 +35,6 @@ def preprocess_image(image_path):
     thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
                                   cv2.THRESH_BINARY, 11, 2)
     
-    # Deskew if needed
-    # This is simplified; a more robust deskew would analyze text angles
-    
     # Save the preprocessed image
     preprocessed_path = image_path.replace('.', '_processed.')
     cv2.imwrite(preprocessed_path, thresh)
@@ -49,8 +46,50 @@ def extract_text(image_path):
     text = pytesseract.image_to_string(image_path)
     return text
 
-@app.route('/api/upload', methods=['POST'])
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
+@app.route('/upload', methods=['POST'])
 def upload_file():
+    if 'file' not in request.files:
+        return render_template('index.html', error='No file part')
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return render_template('index.html', error='No selected file')
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        try:
+            # Process the image
+            preprocessed_path, original_dimensions = preprocess_image(filepath)
+            
+            # Extract text
+            raw_text = extract_text(preprocessed_path)
+            
+            # Get relative paths for templates
+            original_rel_path = filepath
+            preprocessed_rel_path = preprocessed_path
+            
+            # Return results
+            return render_template('result.html', 
+                                  raw_text=raw_text,
+                                  original_image=original_rel_path,
+                                  preprocessed_image=preprocessed_rel_path,
+                                  width=original_dimensions[1],
+                                  height=original_dimensions[0])
+        except Exception as e:
+            return render_template('index.html', error=str(e))
+    
+    return render_template('index.html', error='Invalid file format')
+
+@app.route('/api/upload', methods=['POST'])
+def api_upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     
@@ -85,14 +124,6 @@ def upload_file():
             return jsonify({'error': str(e)}), 500
     
     return jsonify({'error': 'Invalid file format'}), 400
-
-@app.route('/')
-def index():
-    return app.send_static_file('index.html')
-
-@app.errorhandler(404)
-def not_found(e):
-    return app.send_static_file('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

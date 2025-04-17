@@ -2,8 +2,8 @@
 """
 TextifyAI Startup Script
 -------------------------
-This script provides a convenient way to start both the Flask backend
-and serve static files for the React frontend.
+This script provides a convenient way to start the Flask backend
+and serve the HTML templates directly.
 """
 
 import os
@@ -15,8 +15,8 @@ import sys
 from threading import Thread
 
 def start_flask():
-    """Start the Flask backend server"""
-    print("Starting Flask backend server...")
+    """Start the Flask server"""
+    print("Starting Flask server...")
     os.environ['FLASK_APP'] = 'app.py'
     os.environ['FLASK_ENV'] = 'development'
     subprocess.Popen(['python', 'app.py'])
@@ -41,7 +41,17 @@ if __name__ == '__main__':
         os.makedirs('uploads')
         print("Created uploads directory")
         
-    # Start Flask backend
+    # Create templates directory if it doesn't exist
+    if not os.path.exists('templates'):
+        os.makedirs('templates')
+        print("Created templates directory")
+        
+    # Create static directory if it doesn't exist
+    if not os.path.exists('static'):
+        os.makedirs('static')
+        print("Created static directory")
+        
+    # Start Flask server
     start_flask()
     
     # Open browser after a delay

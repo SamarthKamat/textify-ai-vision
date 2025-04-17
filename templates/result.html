@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TextifyAI Vision - Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1A1F2C;
+            color: white;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #F97316, #f97316);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-output {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .slider-container {
+            position: relative;
+            overflow: hidden;
+            max-width: 100%;
+        }
+        .slider-img-container {
+            position: relative;
+        }
+        .slider-img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .img-clipper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #F97316;
+            cursor: ew-resize;
+        }
+        .slider-handle-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #F97316;
+            border: 3px solid white;
+            transform: translate(-50%, -50%);
+            cursor: ew-resize;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .slider-handle-arrow {
+            color: white;
+            font-size: 12px;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="sticky top-0 z-10 bg-opacity-90 backdrop-filter backdrop-blur-md border-b border-white border-opacity-10 px-6 py-4" style="background-color: rgba(26, 31, 44, 0.9);">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/" class="text-2xl font-bold gradient-text">TextifyAI Vision</a>
+            </div>
+            <nav class="hidden md:block">
+                <ul class="flex space-x-8">
+                    <li><a href="#results" class="text-white text-opacity-80 hover:text-opacity-100 transition-colors">Results</a></li>
+                    <li><a href="#processing" class="text-white text-opacity-80 hover:text-opacity-100 transition-colors">Processing</a></li>
+                    <li><a href="/" class="text-white text-opacity-80 hover:text-opacity-100 transition-colors">New Upload</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        <!-- Results Section -->
+        <section id="results" class="mb-24">
+            <div class="text-center mb-10">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    Extracted <span class="gradient-text">Text</span>
+                </h2>
+                <p class="text-xl text-white text-opacity-70 max-w-2xl mx-auto">
+                    Here's the text extracted from your image
+                </p>
+            </div>
+            
+            <!-- Text Output -->
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-black bg-opacity-30 rounded-lg overflow-hidden">
+                    <!-- Text Display -->
+                    <div class="bg-black bg-opacity-50 p-6 rounded-t-lg">
+                        <pre id="extracted-text" class="text-output text-white text-opacity-80 font-mono text-sm max-h-96 overflow-y-auto">{{ raw_text or 'No text was extracted from this image.' }}</pre>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end items-center gap-2 p-3 border-t border-white border-opacity-10">
+                        <button id="copy-btn" class="flex items-center gap-1 px-3 py-1.5 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-md transition-colors">
+                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            Copy Text
+                        </button>
+                        
+                        <button id="download-btn" class="flex items-center gap-1 px-3 py-1.5 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-md transition-colors">
+                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center text-white text-opacity-50 text-sm">
+                    <p>
+                        The extracted text may contain some errors depending on image quality and text clarity.
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Processing Visualization -->
+        <section id="processing" class="mb-24">
+            <h2 class="text-3xl font-bold mb-8 text-center">Image Processing</h2>
+            
+            <!-- Processing Stages -->
+            <div class="flex justify-center mb-10">
+                <div class="grid grid-cols-5 gap-4 max-w-4xl">
+                    <div class="bg-green-500 bg-opacity-20 p-3 rounded-lg text-center">
+                        <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-full bg-green-500 bg-opacity-20">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                        </div>
+                        <p class="text-xs text-white">Upload</p>
+                    </div>
+                    
+                    <div class="bg-green-500 bg-opacity-20 p-3 rounded-lg text-center">
+                        <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-full bg-green-500 bg-opacity-20">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                            </svg>
+                        </div>
+                        <p class="text-xs text-white">Grayscale</p>
+                    </div>
+                    
+                    <div class="bg-green-500 bg-opacity-20 p-3 rounded-lg text-center">
+                        <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-full bg-green-500 bg-opacity-20">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-xs text-white">Denoising</p>
+                    </div>
+                    
+                    <div class="bg-green-500 bg-opacity-20 p-3 rounded-lg text-center">
+                        <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-full bg-green-500 bg-opacity-20">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                            </svg>
+                        </div>
+                        <p class="text-xs text-white">Thresholding</p>
+                    </div>
+                    
+                    <div class="bg-green-500 bg-opacity-20 p-3 rounded-lg text-center">
+                        <div class="w-10 h-10 mx-auto mb-2 flex items-center justify-center rounded-full bg-green-500 bg-opacity-20">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-xs text-white">OCR</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Image Before/After -->
+            <div class="max-w-2xl mx-auto">
+                <h3 class="text-xl font-semibold mb-4 text-center">Original vs. Processed Image</h3>
+                
+                <div class="slider-container rounded-lg overflow-hidden border border-white border-opacity-20">
+                    <div class="slider-img-container">
+                        <img src="/{{ preprocessed_image }}" class="slider-img" alt="Processed Image">
+                        
+                        <div id="img-clipper" class="img-clipper" style="width: 50%;">
+                            <img src="/{{ original_image }}" class="slider-img" alt="Original Image">
+                        </div>
+                        
+                        <div id="slider-handle" class="slider-handle" style="left: 50%;">
+                            <div class="slider-handle-circle">
+                                <span class="slider-handle-arrow">↔</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mt-2 text-sm text-white text-opacity-50">
+                    <span>Processed</span>
+                    <span>Original</span>
+                </div>
+                
+                <p class="text-center text-white text-opacity-70 mt-4">
+                    Drag the slider to compare the original image with the processed version
+                </p>
+            </div>
+        </section>
+        
+        <div class="text-center">
+            <a href="/" class="inline-block bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 px-8 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50">
+                Process Another Image
+            </a>
+        </div>
+    </main>
+    
+    <footer class="bg-black bg-opacity-30 py-6 px-4">
+        <div class="max-w-6xl mx-auto text-center text-white text-opacity-60 text-sm">
+            <p>© <span id="current-year"></span> TextifyAI Vision. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Copy text functionality
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const textToCopy = document.getElementById('extracted-text').textContent;
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    this.textContent = 'Copied!';
+                    setTimeout(() => {
+                        this.innerHTML = `<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        Copy Text`;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+        });
+        
+        // Download text functionality
+        document.getElementById('download-btn').addEventListener('click', function() {
+            const textToDownload = document.getElementById('extracted-text').textContent;
+            const element = document.createElement('a');
+            const file = new Blob([textToDownload], {type: 'text/plain'});
+            element.href = URL.createObjectURL(file);
+            element.download = 'extracted-text.txt';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        });
+        
+        // Image comparison slider
+        const sliderHandle = document.getElementById('slider-handle');
+        const imgClipper = document.getElementById('img-clipper');
+        const sliderContainer = sliderHandle.parentElement;
+        
+        let isDragging = false;
+        
+        sliderHandle.addEventListener('mousedown', startDrag);
+        sliderHandle.addEventListener('touchstart', startDrag, { passive: true });
+        
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag, { passive: true });
+        
+        function startDrag(e) {
+            isDragging = true;
+            sliderContainer.classList.add('dragging');
+        }
+        
+        function endDrag() {
+            isDragging = false;
+            sliderContainer.classList.remove('dragging');
+        }
+        
+        function drag(e) {
+            if (!isDragging) return;
+            
+            let clientX;
+            
+            if (e.type === 'touchmove') {
+                clientX = e.touches[0].clientX;
+            } else {
+                clientX = e.clientX;
+            }
+            
+            const rect = sliderContainer.getBoundingClientRect();
+            let position = (clientX - rect.left) / rect.width;
+            
+            position = Math.max(0, Math.min(1, position));
+            
+            const percentage = position * 100;
+            sliderHandle.style.left = `${percentage}%`;
+            imgClipper.style.width = `${percentage}%`;
+        }
+    </script>
+</body>
+</html>
