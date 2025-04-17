@@ -1,73 +1,47 @@
-# Welcome to your Lovable project
 
-## Project info
+# TextifyAI - Image to Text Conversion
 
-**URL**: https://lovable.dev/projects/6690d9dc-f275-48b0-8fd2-898e15e1ea8d
+This application uses OpenCV for image preprocessing and Tesseract OCR for text extraction, with a Flask backend and React frontend.
 
-## How can I edit this code?
+## Setup Instructions
 
-There are several ways of editing your application.
+### Backend Setup
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/6690d9dc-f275-48b0-8fd2-898e15e1ea8d) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+1. Install Python dependencies:
+```
+pip install -r requirements.txt
 ```
 
-**Edit a file directly in GitHub**
+2. Install Tesseract OCR:
+   - **Windows**: Download and install from https://github.com/UB-Mannheim/tesseract/wiki
+   - **Mac**: `brew install tesseract`
+   - **Linux**: `sudo apt-get install tesseract-ocr`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. Run the Flask backend:
+```
+python app.py
+```
 
-**Use GitHub Codespaces**
+### Frontend Setup
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. Install Node.js dependencies:
+```
+npm install
+```
 
-## What technologies are used for this project?
+2. Start the development server:
+```
+npm start
+```
 
-This project is built with:
+## Usage
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Open the application in your browser
+2. Upload an image containing text
+3. View the preprocessing steps and extracted text
+4. Copy or download the extracted text
 
-## How can I deploy this project?
+## Technologies Used
 
-Simply open [Lovable](https://lovable.dev/projects/6690d9dc-f275-48b0-8fd2-898e15e1ea8d) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- **Backend**: Flask, OpenCV, Tesseract OCR
+- **Frontend**: React, Tailwind CSS
