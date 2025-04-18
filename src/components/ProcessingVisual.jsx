@@ -1,12 +1,12 @@
-
 import React from 'react';
 
 export const ProcessingVisual = ({ currentStage, stages, originalImage, processedImage, processedImages }) => {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Progress Steps */}
-      <div className="relative flex justify-between mb-12 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg">
+      <div className="flex justify-between mb-12">
         {stages.map((stage, index) => {
+          // Define the status of this step
           let status;
           if (index < currentStage) status = 'completed';
           else if (index === currentStage) status = 'current';
@@ -14,6 +14,7 @@ export const ProcessingVisual = ({ currentStage, stages, originalImage, processe
           
           return (
             <div key={stage} className="flex flex-col items-center w-1/6">
+              {/* Circle with number */}
               <div 
                 className={`h-10 w-10 rounded-full flex items-center justify-center 
                   ${status === 'completed' ? 'bg-[#F97316] text-white' : 
@@ -29,6 +30,7 @@ export const ProcessingVisual = ({ currentStage, stages, originalImage, processe
                 )}
               </div>
               
+              {/* Label */}
               <div className="text-center mt-2">
                 <p className={`text-sm font-medium
                   ${status === 'completed' ? 'text-[#F97316]' : 
@@ -38,6 +40,14 @@ export const ProcessingVisual = ({ currentStage, stages, originalImage, processe
                   {stage}
                 </p>
               </div>
+              
+              {/* Connector line (except for last item) */}
+              {index < stages.length - 1 && (
+                <div 
+                  className={`h-[2px] w-full absolute left-[50%] top-5 z-[-1]
+                    ${status === 'completed' ? 'bg-[#F97316]' : 'bg-white/20'}`}
+                ></div>
+              )}
             </div>
           );
         })}
@@ -47,56 +57,84 @@ export const ProcessingVisual = ({ currentStage, stages, originalImage, processe
       {originalImage && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           {/* Original Image */}
-          <div className="bg-black/30 p-4 rounded-lg transform transition-all duration-500 hover:scale-[1.02] hover:shadow-xl">
+          <div className="bg-black/30 p-4 rounded-lg">
             <h3 className="text-lg font-medium mb-3 text-white/80">Original Image</h3>
             <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
               <img 
                 src={originalImage} 
                 alt="Original" 
-                className="max-h-full max-w-full object-contain transition-transform duration-500 hover:scale-105" 
+                className="max-h-full max-w-full object-contain" 
               />
             </div>
           </div>
           
-          {/* Intermediate Processing */}
-          <div className="bg-black/30 p-4 rounded-lg transform transition-all duration-500 hover:scale-[1.02] hover:shadow-xl">
-            <h3 className="text-lg font-medium mb-3 text-white/80">
-              {currentStage === 1 ? 'Grayscale' :
-               currentStage === 2 ? 'Denoising' :
-               currentStage === 3 ? 'Thresholding' :
-               currentStage === 4 ? 'Edge Detection' : 'Processing'}
-            </h3>
+          {/* Grayscale Image */}
+          <div className="bg-black/30 p-4 rounded-lg">
+            <h3 className="text-lg font-medium mb-3 text-white/80">Grayscale</h3>
             <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
-              {processedImages && (
+              {processedImages?.gray ? (
                 <img 
-                  src={`http://localhost:5000${currentStage === 1 ? processedImages.gray :
-                                                currentStage === 2 ? processedImages.blur :
-                                                currentStage === 3 ? processedImages.thresh :
-                                                currentStage === 4 ? processedImages.edge : processedImages.thresh}`}
-                  alt="Processing Stage"
-                  className="max-h-full max-w-full object-contain transition-transform duration-500 hover:scale-105"
+                  src={`http://localhost:5000${processedImages.gray}`} 
+                  alt="Grayscale" 
+                  className="max-h-full max-w-full object-contain"
                 />
+              ) : (
+                <div className="text-white/30 flex flex-col items-center justify-center">
+                  <p>Processing...</p>
+                </div>
               )}
             </div>
           </div>
           
-          {/* Final Result */}
-          <div className="bg-black/30 p-4 rounded-lg transform transition-all duration-500 hover:scale-[1.02] hover:shadow-xl">
-            <h3 className="text-lg font-medium mb-3 text-white/80">Final Result</h3>
+          {/* Blurred Image */}
+          <div className="bg-black/30 p-4 rounded-lg">
+            <h3 className="text-lg font-medium mb-3 text-white/80">Blurred</h3>
             <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
-              {processedImages && processedImages.thresh ? (
+              {processedImages?.blur ? (
                 <img 
-                  src={`http://localhost:5000${processedImages.thresh}`} 
-                  alt="Final Result" 
-                  className="max-h-full max-w-full object-contain transition-transform duration-500 hover:scale-105"
+                  src={`http://localhost:5000${processedImages.blur}`} 
+                  alt="Blurred" 
+                  className="max-h-full max-w-full object-contain"
                 />
               ) : (
-                <div className="text-white/30 flex flex-col items-center justify-center animate-pulse">
-                  <svg className="animate-spin h-8 w-8 text-[#F97316]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <p className="mt-2">Processing...</p>
+                <div className="text-white/30 flex flex-col items-center justify-center">
+                  <p>Processing...</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Edge Detection */}
+          <div className="bg-black/30 p-4 rounded-lg">
+            <h3 className="text-lg font-medium mb-3 text-white/80">Edge Detection</h3>
+            <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
+              {processedImages?.edge ? (
+                <img 
+                  src={`http://localhost:5000${processedImages.edge}`} 
+                  alt="Edge Detection" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <div className="text-white/30 flex flex-col items-center justify-center">
+                  <p>Processing...</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Thresholded Image */}
+          <div className="bg-black/30 p-4 rounded-lg">
+            <h3 className="text-lg font-medium mb-3 text-white/80">Thresholded</h3>
+            <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
+              {processedImages?.thresh ? (
+                <img 
+                  src={`http://localhost:5000${processedImages.thresh}`} 
+                  alt="Thresholded" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <div className="text-white/30 flex flex-col items-center justify-center">
+                  <p>Processing...</p>
                 </div>
               )}
             </div>
