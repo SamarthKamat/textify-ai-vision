@@ -9,7 +9,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
 # Configure Tesseract path for Windows
 if os.name == 'nt':
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
 
 # 📦 Hugging Face Setup
 model_name = "google/flan-t5-base"
