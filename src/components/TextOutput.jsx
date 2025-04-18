@@ -25,7 +25,7 @@ export const TextOutput = ({ rawText }) => {
       <div className="bg-black/30 rounded-lg overflow-hidden">
         {/* Text Display */}
         <div className="bg-black/50 p-6 rounded-t-lg">
-          <pre className="whitespace-pre-wrap break-words text-white/80 font-mono text-sm max-h-96 overflow-y-auto">
+          <pre className="whitespace-pre-wrap break-words text-white font-mono text-sm max-h-96 overflow-y-auto">
             {rawText || 'No text was extracted from this image.'}
           </pre>
         </div>
