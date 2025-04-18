@@ -1,9 +1,8 @@
-
 import React, { useState, useRef } from 'react';
-import { FileUpload } from '../components/FileUpload';
-import { ProcessingVisual } from '../components/ProcessingVisual';
-import { TextOutput } from '../components/TextOutput';
-import { TechStack } from '../components/TechStack';
+import { FileUpload } from '../components/FileUpload.jsx';
+import { ProcessingVisual } from '../components/ProcessingVisual.jsx';
+import { TextOutput } from '../components/TextOutput.jsx';
+import { TechStack } from '../components/TechStack.jsx';
 
 const Index = () => {
   const [file, setFile] = useState(null);

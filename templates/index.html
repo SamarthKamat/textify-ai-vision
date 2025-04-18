@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TextifyAI Vision</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1A1F2C;
+            color: white;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #F97316, #f97316);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .drop-area {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .drop-area:hover {
+            border-color: #F97316;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="sticky top-0 z-10 bg-opacity-90 backdrop-filter backdrop-blur-md border-b border-white border-opacity-10 px-6 py-4" style="background-color: rgba(26, 31, 44, 0.9);">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold gradient-text">TextifyAI Vision</h1>
+            </div>
+            <nav class="hidden md:block">
+                <ul class="flex space-x-8">
+                    <li><a href="#convert" class="text-white text-opacity-80 hover:text-opacity-100 transition-colors">Convert</a></li>
+                    <li><a href="#how-it-works" class="text-white text-opacity-80 hover:text-opacity-100 transition-colors">How It Works</a></li>
+                    <li><a href="#tech-stack" class="text-white text-opacity-80 hover:text-opacity-100 transition-colors">Tech Stack</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        <!-- Hero Section with Upload -->
+        <section id="convert" class="mb-24">
+            <div class="text-center mb-10">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    Extract Text from <span class="gradient-text">Any Image</span>
+                </h2>
+                <p class="text-xl text-white text-opacity-70 max-w-2xl mx-auto">
+                    Upload an image and our AI-powered tool will extract all text using advanced computer vision techniques
+                </p>
+            </div>
+            
+            {% if error %}
+            <div class="bg-red-500 bg-opacity-20 border border-red-500 text-white px-4 py-3 rounded mb-6">
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+            
+            <form action="/upload" method="post" enctype="multipart/form-data" class="max-w-3xl mx-auto">
+                <div class="drop-area bg-black bg-opacity-30 rounded-lg p-8 text-center cursor-pointer mb-6" id="drop-zone">
+                    <div class="py-12">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="mb-2 text-sm text-gray-400">
+                            <span class="font-medium">Click to upload</span> or drag and drop
+                        </p>
+                        <p class="text-xs text-gray-400">
+                            PNG, JPG, JPEG, BMP (Max 10MB)
+                        </p>
+                        <input id="file-upload" name="file" type="file" class="hidden" accept=".png,.jpg,.jpeg,.bmp" required>
+                    </div>
+                    <div id="preview-container" class="hidden mt-4">
+                        <img id="image-preview" class="max-h-64 mx-auto rounded" src="#" alt="Preview">
+                        <button type="button" id="remove-image" class="mt-2 text-sm text-red-400 hover:text-red-500">
+                            Remove image
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button type="submit" id="process-btn" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 px-8 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Process Image
+                    </button>
+                </div>
+            </form>
+        </section>
+        
+        <!-- Tech Stack Section -->
+        <section id="tech-stack" class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Technology Stack</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-black bg-opacity-30 p-6 rounded-lg">
+                    <div class="mb-4 flex items-center">
+                        <div class="bg-blue-500 bg-opacity-20 p-3 rounded-lg mr-3">
+                            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold">OpenCV</h3>
+                    </div>
+                    <p class="text-white text-opacity-70">Preprocessing pipeline for image enhancement including grayscale conversion, noise reduction, and thresholding.</p>
+                </div>
+                
+                <div class="bg-black bg-opacity-30 p-6 rounded-lg">
+                    <div class="mb-4 flex items-center">
+                        <div class="bg-green-500 bg-opacity-20 p-3 rounded-lg mr-3">
+                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold">Tesseract OCR</h3>
+                    </div>
+                    <p class="text-white text-opacity-70">Text extraction using Google's Tesseract OCR engine for accurate character recognition from images.</p>
+                </div>
+                
+                <div class="bg-black bg-opacity-30 p-6 rounded-lg">
+                    <div class="mb-4 flex items-center">
+                        <div class="bg-orange-500 bg-opacity-20 p-3 rounded-lg mr-3">
+                            <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold">Flask</h3>
+                    </div>
+                    <p class="text-white text-opacity-70">Lightweight web server for handling image uploads, processing requests, and serving the application.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="bg-black bg-opacity-30 py-6 px-4">
+        <div class="max-w-6xl mx-auto text-center text-white text-opacity-60 text-sm">
+            <p>© <span id="current-year"></span> TextifyAI Vision. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Handle file upload preview
+        const dropZone = document.getElementById('drop-zone');
+        const fileUpload = document.getElementById('file-upload');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const removeButton = document.getElementById('remove-image');
+        const processButton = document.getElementById('process-btn');
+        
+        dropZone.addEventListener('click', () => fileUpload.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-orange-500');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-orange-500');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-orange-500');
+            
+            if (e.dataTransfer.files.length) {
+                fileUpload.files = e.dataTransfer.files;
+                updatePreview();
+            }
+        });
+        
+        fileUpload.addEventListener('change', updatePreview);
+        
+        removeButton.addEventListener('click', () => {
+            fileUpload.value = '';
+            previewContainer.classList.add('hidden');
+            processButton.disabled = true;
+        });
+        
+        function updatePreview() {
+            if (fileUpload.files.length) {
+                const file = fileUpload.files[0];
+                
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('File size exceeds 10MB limit');
+                    fileUpload.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    processButton.disabled = false;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>

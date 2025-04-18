@@ -1,12 +1,4 @@
 
-# Build stage
-FROM node:18 as build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . ./
-RUN npm run build
-
 # Python stage
 FROM python:3.9-slim
 WORKDIR /app
@@ -23,9 +15,10 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy Python app
+# Copy application files
 COPY app.py .
-COPY --from=build /app/build ./build
+COPY templates/ ./templates/
+COPY static/ ./static/
 
 # Create uploads directory
 RUN mkdir -p uploads
