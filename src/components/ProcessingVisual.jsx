@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-export const ProcessingVisual = ({ currentStage, stages, originalImage, processedImage }) => {
+export const ProcessingVisual = ({ currentStage, stages, originalImage, processedImage, processedImages }) => {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Progress Steps */}
@@ -54,10 +54,11 @@ export const ProcessingVisual = ({ currentStage, stages, originalImage, processe
         })}
       </div>
       
-      {/* Image Comparison */}
+      {/* Processing Steps Grid */}
       {originalImage && (
-        <div className="flex flex-col md:flex-row gap-8 mt-8">
-          <div className="flex-1 bg-black/30 p-4 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          {/* Original Image */}
+          <div className="bg-black/30 p-4 rounded-lg">
             <h3 className="text-lg font-medium mb-3 text-white/80">Original Image</h3>
             <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
               <img 
@@ -68,25 +69,73 @@ export const ProcessingVisual = ({ currentStage, stages, originalImage, processe
             </div>
           </div>
           
-          <div className="flex-1 bg-black/30 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-3 text-white/80">Processed Image</h3>
+          {/* Grayscale Image */}
+          <div className="bg-black/30 p-4 rounded-lg">
+            <h3 className="text-lg font-medium mb-3 text-white/80">Grayscale</h3>
             <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
-              {processedImage ? (
+              {processedImages?.gray ? (
                 <img 
-                  src={`http://localhost:5000/${processedImage}`} 
-                  alt="Processed" 
+                  src={`http://localhost:5000${processedImages.gray}`} 
+                  alt="Grayscale" 
                   className="max-h-full max-w-full object-contain"
-                  onError={(e) => {
-                    e.target.onerror = null; 
-                    e.target.src = originalImage;
-                  }}  
                 />
               ) : (
                 <div className="text-white/30 flex flex-col items-center justify-center">
-                  <svg className="h-10 w-10 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                  <p>Processing in progress...</p>
+                  <p>Processing...</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Blurred Image */}
+          <div className="bg-black/30 p-4 rounded-lg">
+            <h3 className="text-lg font-medium mb-3 text-white/80">Blurred</h3>
+            <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
+              {processedImages?.blur ? (
+                <img 
+                  src={`http://localhost:5000${processedImages.blur}`} 
+                  alt="Blurred" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <div className="text-white/30 flex flex-col items-center justify-center">
+                  <p>Processing...</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Edge Detection */}
+          <div className="bg-black/30 p-4 rounded-lg">
+            <h3 className="text-lg font-medium mb-3 text-white/80">Edge Detection</h3>
+            <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
+              {processedImages?.edge ? (
+                <img 
+                  src={`http://localhost:5000${processedImages.edge}`} 
+                  alt="Edge Detection" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <div className="text-white/30 flex flex-col items-center justify-center">
+                  <p>Processing...</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Thresholded Image */}
+          <div className="bg-black/30 p-4 rounded-lg">
+            <h3 className="text-lg font-medium mb-3 text-white/80">Thresholded</h3>
+            <div className="aspect-video bg-black/50 rounded-md flex items-center justify-center overflow-hidden">
+              {processedImages?.thresh ? (
+                <img 
+                  src={`http://localhost:5000${processedImages.thresh}`} 
+                  alt="Thresholded" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <div className="text-white/30 flex flex-col items-center justify-center">
+                  <p>Processing...</p>
                 </div>
               )}
             </div>
