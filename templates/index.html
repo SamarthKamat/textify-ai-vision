@@ -178,8 +178,10 @@
         
         removeButton.addEventListener('click', () => {
             fileUpload.value = '';
+            imagePreview.src = '';
             previewContainer.classList.add('hidden');
             processButton.disabled = true;
+            dropZone.classList.remove('border-orange-500');
         });
         
         function updatePreview() {

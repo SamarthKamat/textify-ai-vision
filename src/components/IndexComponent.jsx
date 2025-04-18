@@ -76,9 +76,8 @@ const Index = () => {
   
   return (
     <div className="min-h-screen bg-[#1A1F2C] text-white">
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-[#1A1F2C]/90 backdrop-blur-md border-b border-white/10 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+        <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-[#F97316] to-orange-500 bg-clip-text text-transparent">TextifyAI Vision</h1>
           </div>
@@ -96,7 +95,7 @@ const Index = () => {
         </div>
       </header>
       
-      <main className="max-w-6xl mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-12">
         {/* Hero Section with Upload */}
         <section id="convert" className="mb-24">
           <div className="text-center mb-10">
