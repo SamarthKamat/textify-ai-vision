@@ -62,9 +62,9 @@ export const FileUpload = ({ onFileChange, onProcess, isProcessing, previewUrl, 
       {/* Drag & Drop Area */}
       <div
         ref={dropRef}
-        className={`border-2 border-dashed rounded-xl p-8 transition-all
-          ${isDragging ? 'border-[#F97316] bg-[#F97316]/10' : 'border-white/20 hover:border-white/40'}
-          ${previewUrl ? 'border-opacity-50' : ''}`}
+        className={`border-2 border-dashed rounded-xl p-8 transition-all backdrop-blur-sm bg-white/5
+          ${isDragging ? 'border-[#F97316] bg-[#F97316]/10 scale-102 shadow-2xl shadow-[#F97316]/20' : 'border-white/20 hover:border-white/40 hover:bg-white/10 hover:scale-101 hover:shadow-xl'}
+          ${previewUrl ? 'border-opacity-50 bg-black/20' : ''}`}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}

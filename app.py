@@ -1,4 +1,3 @@
-
 import os
 import cv2
 import numpy as np
@@ -6,6 +5,9 @@ import pytesseract
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+
+# Set Tesseract executable path
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 CORS(app)
@@ -42,12 +44,23 @@ def preprocess_image(image_path):
     return preprocessed_path, img.shape
 
 def extract_text(image_path):
-    # Use pytesseract to extract text from the preprocessed image
-    text = pytesseract.image_to_string(image_path)
+    # Configure Tesseract to preserve whitespace and detect all characters
+    custom_config = r'--oem 3 --psm 6 -c preserve_interword_spaces=1'
+    
+    # Extract text with all characters including symbols and emojis
+    text = pytesseract.image_to_string(
+        image_path,
+        config=custom_config,
+        output_type=pytesseract.Output.STRING
+    )
     return text
 
 @app.route('/', methods=['GET'])
 def index():
+    return render_template('landing.html')
+
+@app.route('/app', methods=['GET'])
+def app_index():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])

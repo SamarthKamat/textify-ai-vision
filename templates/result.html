@@ -88,9 +88,9 @@
         </div>
     </header>
     
-    <main class="max-w-6xl mx-auto px-4 py-12">
+    <main class="w-full px-4 py-12">
         <!-- Results Section -->
-        <section id="results" class="mb-24">
+        <section id="results" class="mb-24 max-w-7xl mx-auto backdrop-blur-lg bg-black bg-opacity-20 p-8 rounded-xl shadow-2xl border border-white border-opacity-10">
             <div class="text-center mb-10">
                 <h2 class="text-4xl md:text-5xl font-bold mb-4">
                     Extracted <span class="gradient-text">Text</span>
@@ -102,9 +102,8 @@
             
             <!-- Text Output -->
             <div class="max-w-4xl mx-auto">
-                <div class="bg-black bg-opacity-30 rounded-lg overflow-hidden">
-                    <!-- Text Display -->
-                    <div class="bg-black bg-opacity-50 p-6 rounded-t-lg">
+                <div class="text-output bg-black bg-opacity-30 rounded-lg p-6 font-mono text-sm md:text-base whitespace-pre-wrap break-words transform transition-all duration-300 hover:shadow-xl border border-white border-opacity-5">
+                    <div class="animate__animated animate__fadeIn">
                         <pre id="extracted-text" class="text-output text-white text-opacity-80 font-mono text-sm max-h-96 overflow-y-auto">{{ raw_text or 'No text was extracted from this image.' }}</pre>
                     </div>
                     
