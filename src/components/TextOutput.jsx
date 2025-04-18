@@ -24,13 +24,8 @@ export const TextOutput = ({ rawText }) => {
     <div className="max-w-4xl mx-auto">
       <div className="bg-black/30 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 shadow-lg transition-all duration-300 hover:bg-black/40">
         {/* Text Display */}
-        <div className="bg-black/50 p-6 rounded-t-lg relative">
-          <div className="absolute top-2 right-2 flex space-x-2">
-            <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-          </div>
-          <pre className="whitespace-pre-wrap break-words text-white/80 font-mono text-sm max-h-96 overflow-y-auto custom-scrollbar">
+        <div className="bg-black/50 p-6 rounded-t-lg">
+          <pre className="whitespace-pre-wrap break-words text-white/80 font-mono text-sm max-h-96 overflow-y-auto">
             {rawText || 'No text was extracted from this image.'}
           </pre>
         </div>

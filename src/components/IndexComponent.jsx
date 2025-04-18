@@ -11,6 +11,7 @@ const Index = () => {
   const [processedData, setProcessedData] = useState(null);
   const [processingStage, setProcessingStage] = useState(0);
   const [error, setError] = useState(null);
+  const [processedImages, setProcessedImages] = useState(null);
   
   const stages = [
     'Upload', 
@@ -49,7 +50,7 @@ const Index = () => {
       }, 700); // Adjust for realistic timing
       
       // Actual API call
-      const response = await fetch('http://localhost:5000/api/upload', {
+      const response = await fetch('http://127.0.0.1:5000/api/upload', {
         method: 'POST',
         body: formData,
       });
@@ -60,10 +61,12 @@ const Index = () => {
       }
       
       const data = await response.json();
+      console.log('API Response:', data); // Debug log to see the response data
       
       // Final stage
       setProcessingStage(stages.length - 1);
       setProcessedData(data);
+      setProcessedImages(data.processed_images); // Update processed images from API response
     } catch (err) {
       setError(err.message || 'An error occurred during processing');
     } finally {
@@ -130,6 +133,7 @@ const Index = () => {
               stages={stages} 
               originalImage={previewUrl}
               processedImage={processedData?.preprocessed_image}
+              processedImages={processedImages}
             />
           </section>
         )}

@@ -1,58 +1,62 @@
 import os
 import cv2
-import numpy as np
 import pytesseract
-from flask import Flask, request, jsonify, render_template, redirect, url_for
+import numpy as np
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-
-# Set Tesseract executable path
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 CORS(app)
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp'}
-
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+from flask import send_from_directory
+
+# ✅ Only one definition needed
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+# ✅ Helper Functions
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def preprocess_image(image_path):
-    # Read the image with OpenCV
     img = cv2.imread(image_path)
-    
     # Convert to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray_path = image_path.replace('.', '_gray.')
+    cv2.imwrite(gray_path, gray)
     
-    # Apply Gaussian blur to reduce noise
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    # Apply Gaussian blur
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    blur_path = image_path.replace('.', '_blur.')
+    cv2.imwrite(blur_path, blurred)
     
-    # Apply adaptive thresholding
-    thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                  cv2.THRESH_BINARY, 11, 2)
+    # Edge detection
+    canny = cv2.Canny(blurred, 100, 200)
+    edge_path = image_path.replace('.', '_edge.')
+    cv2.imwrite(edge_path, canny)
     
-    # Save the preprocessed image
-    preprocessed_path = image_path.replace('.', '_processed.')
-    cv2.imwrite(preprocessed_path, thresh)
+    # Thresholding
+    thresh = cv2.adaptiveThreshold(
+        blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY, 11, 2
+    )
+    thresh_path = image_path.replace('.', '_thresh.')
+    cv2.imwrite(thresh_path, thresh)
     
     return preprocessed_path, img.shape
 
 def extract_text(image_path):
-    # Configure Tesseract to preserve whitespace and detect all characters
-    custom_config = r'--oem 3 --psm 6 -c preserve_interword_spaces=1'
-    
-    # Extract text with all characters including symbols and emojis
-    text = pytesseract.image_to_string(
-        image_path,
-        config=custom_config,
-        output_type=pytesseract.Output.STRING
-    )
+    # Use pytesseract to extract text from the preprocessed image
+    text = pytesseract.image_to_string(image_path)
     return text
 
 @app.route('/', methods=['GET'])
@@ -67,75 +71,72 @@ def app_index():
 def upload_file():
     if 'file' not in request.files:
         return render_template('index.html', error='No file part')
-    
+
     file = request.files['file']
-    
     if file.filename == '':
         return render_template('index.html', error='No selected file')
-    
+
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-        
+
         try:
-            # Process the image
-            preprocessed_path, original_dimensions = preprocess_image(filepath)
-            
-            # Extract text
-            raw_text = extract_text(preprocessed_path)
-            
-            # Get relative paths for templates
-            original_rel_path = filepath
-            preprocessed_rel_path = preprocessed_path
-            
-            # Return results
-            return render_template('result.html', 
-                                  raw_text=raw_text,
-                                  original_image=original_rel_path,
-                                  preprocessed_image=preprocessed_rel_path,
-                                  width=original_dimensions[1],
-                                  height=original_dimensions[0])
+            preprocessed_path, dimensions, thresh_img = preprocess_image(filepath)
+            raw_text = extract_text_from_image(thresh_img)
+            refined_text = refine_text_with_ai(raw_text)
+
+            return render_template('result.html',
+                raw_text=raw_text,
+                refined_text=refined_text,
+                original_image=filepath,
+                preprocessed_image=preprocessed_path,
+                width=dimensions[1],
+                height=dimensions[0]
+            )
         except Exception as e:
             return render_template('index.html', error=str(e))
-    
+
     return render_template('index.html', error='Invalid file format')
 
 @app.route('/api/upload', methods=['POST'])
 def api_upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
-    
+
     file = request.files['file']
-    
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    
+
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-        
+
         try:
-            # Process the image
-            preprocessed_path, original_dimensions = preprocess_image(filepath)
+            processed_paths, dimensions, thresh_img = preprocess_image(filepath)
+            raw_text = extract_text_from_image(thresh_img)
+            refined_text = refine_text_with_ai(raw_text)
+
+            # Convert file paths to relative URLs for frontend access
+            original_image_url = '/uploads/' + os.path.basename(filepath)
+            processed_urls = {
+                'gray': '/uploads/' + os.path.basename(processed_paths['gray']),
+                'blur': '/uploads/' + os.path.basename(processed_paths['blur']),
+                'edge': '/uploads/' + os.path.basename(processed_paths['edge']),
+                'thresh': '/uploads/' + os.path.basename(processed_paths['thresh'])
+            }
             
-            # Extract text
-            raw_text = extract_text(preprocessed_path)
-            
-            # Return results
             return jsonify({
                 'raw_text': raw_text,
-                'original_image': filepath,
-                'preprocessed_image': preprocessed_path,
-                'dimensions': {
-                    'width': original_dimensions[1],
-                    'height': original_dimensions[0]
-                }
+                'refined_text': refined_text,
+                'original_image': original_image_url,
+                'processed_images': processed_urls,
+                'dimensions': {'width': dimensions[1], 'height': dimensions[0]}
             })
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-    
+
     return jsonify({'error': 'Invalid file format'}), 400
 
 if __name__ == '__main__':
