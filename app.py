@@ -7,6 +7,9 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
+# Set Tesseract path for Windows
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 CORS(app)
 
@@ -43,8 +46,27 @@ def preprocess_image(image_path):
 
 def extract_text(image_path):
     # Use pytesseract to extract text from the preprocessed image
-    text = pytesseract.image_to_string(image_path)
-    return text
+    try:
+        # Open the image with OpenCV first
+        img = cv2.imread(image_path)
+        if img is None:
+            raise Exception(f"Failed to load image at {image_path}")
+            
+        # Convert to PIL Image which pytesseract works better with
+        img_pil = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        # Extract text using pytesseract
+        text = pytesseract.image_to_string(img_pil)
+        
+        # If no text was extracted, log it
+        if not text.strip():
+            print(f"Warning: No text extracted from {image_path}")
+            
+        return text
+    except Exception as e:
+        print(f"Error in text extraction: {str(e)}")
+        # Return empty string instead of failing completely
+        return f"Error extracting text: {str(e)}"
 
 @app.route('/', methods=['GET'])
 def index():
