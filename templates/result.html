@@ -96,7 +96,7 @@
                     Extracted <span class="gradient-text">Text</span>
                 </h2>
                 <p class="text-xl text-white text-opacity-70 max-w-2xl mx-auto">
-                    Here's the text extracted from your image
+                    Here's the text extracted from your images
                 </p>
             </div>
             
@@ -187,25 +187,62 @@
                 </div>
             </div>
             
-            <!-- Image Before/After -->
-            <div class="max-w-2xl mx-auto">
-                <h3 class="text-xl font-semibold mb-4 text-center">Original vs. Processed Image</h3>
+            {% for result in results %}
+            <div class="mb-12 border-b border-white border-opacity-10 pb-8">
+                <h3 class="text-2xl font-semibold mb-6 gradient-text">Image: {{ result.filename }}</h3>
                 
-                <div class="slider-container rounded-lg overflow-hidden border border-white border-opacity-20">
-                    <div class="slider-img-container">
-                        <img src="/{{ preprocessed_image }}" class="slider-img" alt="Processed Image">
-                        
-                        <div id="img-clipper" class="img-clipper" style="width: 50%;">
-                            <img src="/{{ original_image }}" class="slider-img" alt="Original Image">
-                        </div>
-                        
-                        <div id="slider-handle" class="slider-handle" style="left: 50%;">
-                            <div class="slider-handle-circle">
-                                <span class="slider-handle-arrow">↔</span>
+                <!-- Image Before/After -->
+                <div class="max-w-2xl mx-auto mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-center">Original vs. Processed Image</h3>
+                    
+                    <div class="slider-container rounded-lg overflow-hidden border border-white border-opacity-20">
+                        <div class="slider-img-container">
+                            <img src="{{ result.preprocessed_image.thresh }}" class="slider-img" alt="Processed Image">
+                            
+                            <div id="img-clipper-{{ loop.index }}" class="img-clipper" style="width: 50%;">
+                                <img src="{{ result.original_image }}" class="slider-img" alt="Original Image">
+                            </div>
+                            
+                            <div id="slider-handle-{{ loop.index }}" class="slider-handle" style="left: 50%;">
+                                <div class="slider-handle-circle">
+                                    <span class="slider-handle-arrow">↔</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Text Results -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Raw Text -->
+                    <div class="bg-black bg-opacity-30 p-6 rounded-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">Raw Extracted Text</h3>
+                            <div class="flex space-x-2">
+                                <button class="copy-btn text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded" data-text="{{ result.raw_text }}">Copy</button>
+                                <button class="download-btn text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Download</button>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-lg text-output overflow-auto max-h-96">
+                            {{ result.raw_text }}
+                        </div>
+                    </div>
+                    
+                    <!-- Refined Text -->
+                    <div class="bg-black bg-opacity-30 p-6 rounded-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">AI-Refined Text</h3>
+                            <div class="flex space-x-2">
+                                <button class="copy-btn text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded" data-text="{{ result.refined_text }}">Copy</button>
+                                <button class="download-btn text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded">Download</button>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-lg text-output overflow-auto max-h-96">
+                            {{ result.refined_text }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
                 
                 <div class="flex justify-between mt-2 text-sm text-white text-opacity-50">
                     <span>Processed</span>
@@ -232,85 +269,98 @@
     </footer>
     
     <script>
-        // Set current year in footer
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-        
-        // Copy text functionality
-        document.getElementById('copy-btn').addEventListener('click', function() {
-            const textToCopy = document.getElementById('extracted-text').textContent;
-            navigator.clipboard.writeText(textToCopy)
-                .then(() => {
-                    this.textContent = 'Copied!';
-                    setTimeout(() => {
-                        this.innerHTML = `<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                        </svg>
-                        Copy Text`;
-                    }, 2000);
-                })
-                .catch(err => {
-                    console.error('Could not copy text: ', err);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current year in footer
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            
+            // Image comparison sliders - handle multiple images
+            const sliderContainers = document.querySelectorAll('.slider-container');
+            
+            sliderContainers.forEach((container, index) => {
+                const imgClipper = document.getElementById(`img-clipper-${index + 1}`);
+                const sliderHandle = document.getElementById(`slider-handle-${index + 1}`);
+                
+                if (!imgClipper || !sliderHandle) return;
+                
+                let isDragging = false;
+                
+                sliderHandle.addEventListener('mousedown', startDrag);
+                sliderHandle.addEventListener('touchstart', startDrag);
+                
+                function startDrag(e) {
+                    e.preventDefault();
+                    isDragging = true;
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('touchmove', drag);
+                    document.addEventListener('mouseup', stopDrag);
+                    document.addEventListener('touchend', stopDrag);
+                }
+                
+                function drag(e) {
+                    if (!isDragging) return;
+                    
+                    let clientX;
+                    if (e.type === 'touchmove') {
+                        clientX = e.touches[0].clientX;
+                    } else {
+                        clientX = e.clientX;
+                    }
+                    
+                    const rect = container.getBoundingClientRect();
+                    const containerWidth = rect.width;
+                    const handlePosition = clientX - rect.left;
+                    
+                    let positionPercentage = (handlePosition / containerWidth) * 100;
+                    positionPercentage = Math.min(100, Math.max(0, positionPercentage));
+                    
+                    imgClipper.style.width = `${positionPercentage}%`;
+                    sliderHandle.style.left = `${positionPercentage}%`;
+                }
+                
+                function stopDrag() {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', drag);
+                    document.removeEventListener('touchmove', drag);
+                    document.removeEventListener('mouseup', stopDrag);
+                    document.removeEventListener('touchend', stopDrag);
+                }
+            });
+            
+            // Copy buttons
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const textToCopy = this.getAttribute('data-text');
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        const originalText = this.textContent;
+                        this.textContent = 'Copied!';
+                        setTimeout(() => {
+                            this.textContent = originalText;
+                        }, 2000);
+                    });
                 });
+            });
+            
+            // Download buttons - each result can have its own download button
+            const downloadBtns = document.querySelectorAll('.download-btn');
+            downloadBtns.forEach((btn, index) => {
+                btn.addEventListener('click', function() {
+                    const textElement = this.closest('.bg-black').querySelector('.text-output');
+                    if (textElement) {
+                        const text = textElement.textContent;
+                        const blob = new Blob([text], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `extracted_text_${index + 1}.txt`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }
+                });
+            });
         });
-        
-        // Download text functionality
-        document.getElementById('download-btn').addEventListener('click', function() {
-            const textToDownload = document.getElementById('extracted-text').textContent;
-            const element = document.createElement('a');
-            const file = new Blob([textToDownload], {type: 'text/plain'});
-            element.href = URL.createObjectURL(file);
-            element.download = 'extracted-text.txt';
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-        });
-        
-        // Image comparison slider
-        const sliderHandle = document.getElementById('slider-handle');
-        const imgClipper = document.getElementById('img-clipper');
-        const sliderContainer = sliderHandle.parentElement;
-        
-        let isDragging = false;
-        
-        sliderHandle.addEventListener('mousedown', startDrag);
-        sliderHandle.addEventListener('touchstart', startDrag, { passive: true });
-        
-        document.addEventListener('mouseup', endDrag);
-        document.addEventListener('touchend', endDrag);
-        
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('touchmove', drag, { passive: true });
-        
-        function startDrag(e) {
-            isDragging = true;
-            sliderContainer.classList.add('dragging');
-        }
-        
-        function endDrag() {
-            isDragging = false;
-            sliderContainer.classList.remove('dragging');
-        }
-        
-        function drag(e) {
-            if (!isDragging) return;
-            
-            let clientX;
-            
-            if (e.type === 'touchmove') {
-                clientX = e.touches[0].clientX;
-            } else {
-                clientX = e.clientX;
-            }
-            
-            const rect = sliderContainer.getBoundingClientRect();
-            let position = (clientX - rect.left) / rect.width;
-            
-            position = Math.max(0, Math.min(1, position));
-            
-            const percentage = position * 100;
-            sliderHandle.style.left = `${percentage}%`;
-            imgClipper.style.width = `${percentage}%`;
-        }
     </script>
 </body>
 </html>

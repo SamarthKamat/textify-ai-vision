@@ -71,9 +71,9 @@
                             <span class="font-medium">Click to upload</span> or drag and drop
                         </p>
                         <p class="text-xs text-gray-400">
-                            PNG, JPG, JPEG, BMP (Max 10MB)
+                            PNG, JPG, JPEG, BMP (Max 10MB) - You can select multiple images
                         </p>
-                        <input id="file-upload" name="file" type="file" class="hidden" accept=".png,.jpg,.jpeg,.bmp" required>
+                        <input id="file-upload" name="file" type="file" class="hidden" accept=".png,.jpg,.jpeg,.bmp" multiple required>
                     </div>
                     <div id="preview-container" class="hidden mt-4">
                         <img id="image-preview" class="max-h-64 mx-auto rounded" src="#" alt="Preview">
@@ -142,67 +142,122 @@
     </footer>
     
     <script>
-        // Set current year in footer
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-        
-        // Handle file upload preview
-        const dropZone = document.getElementById('drop-zone');
-        const fileUpload = document.getElementById('file-upload');
-        const previewContainer = document.getElementById('preview-container');
-        const imagePreview = document.getElementById('image-preview');
-        const removeButton = document.getElementById('remove-image');
-        const processButton = document.getElementById('process-btn');
-        
-        dropZone.addEventListener('click', () => fileUpload.click());
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('border-orange-500');
-        });
-        
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-orange-500');
-        });
-        
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-orange-500');
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileUpload = document.getElementById('file-upload');
+            const previewContainer = document.getElementById('preview-container');
+            const imagePreview = document.getElementById('image-preview');
+            const removeImage = document.getElementById('remove-image');
+            const processBtn = document.getElementById('process-btn');
             
-            if (e.dataTransfer.files.length) {
-                fileUpload.files = e.dataTransfer.files;
-                updatePreview();
-            }
-        });
-        
-        fileUpload.addEventListener('change', updatePreview);
-        
-        removeButton.addEventListener('click', () => {
-            fileUpload.value = '';
-            imagePreview.src = '';
-            previewContainer.classList.add('hidden');
-            processButton.disabled = true;
-            dropZone.classList.remove('border-orange-500');
-        });
-        
-        function updatePreview() {
-            if (fileUpload.files.length) {
-                const file = fileUpload.files[0];
-                
-                if (file.size > 10 * 1024 * 1024) {
-                    alert('File size exceeds 10MB limit');
-                    fileUpload.value = '';
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
+            // Set current year in footer
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            
+            // Handle click on drop zone
+            dropZone.addEventListener('click', function() {
+                fileUpload.click();
+            });
+            
+            // Handle file selection
+            fileUpload.addEventListener('change', function() {
+                if (fileUpload.files.length > 0) {
+                    // Clear previous preview
+                    previewContainer.innerHTML = '';
+                    
+                    // Create preview for each file
+                    for (let i = 0; i < fileUpload.files.length; i++) {
+                        const file = fileUpload.files[i];
+                        
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert('File size exceeds 10MB limit');
+                            fileUpload.value = '';
+                            return;
+                        }
+                        
+                        const reader = new FileReader();
+                        
+                        const previewItem = document.createElement('div');
+                        previewItem.className = 'mb-3 relative';
+                        
+                        const previewImage = document.createElement('img');
+                        previewImage.className = 'max-h-32 rounded border border-gray-700';
+                        previewImage.alt = 'Preview';
+                        
+                        const fileName = document.createElement('p');
+                        fileName.className = 'text-xs text-gray-400 mt-1';
+                        fileName.textContent = file.name;
+                        
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                        };
+                        
+                        reader.readAsDataURL(file);
+                        
+                        previewItem.appendChild(previewImage);
+                        previewItem.appendChild(fileName);
+                        previewContainer.appendChild(previewItem);
+                    }
+                    
                     previewContainer.classList.remove('hidden');
-                    processButton.disabled = false;
+                    processBtn.disabled = false;
+                    
+                    // Add remove all button
+                    const removeAllBtn = document.createElement('button');
+                    removeAllBtn.type = 'button';
+                    removeAllBtn.className = 'mt-3 text-sm text-red-400 hover:text-red-500';
+                    removeAllBtn.textContent = 'Remove all images';
+                    removeAllBtn.addEventListener('click', function() {
+                        previewContainer.innerHTML = '';
+                        previewContainer.classList.add('hidden');
+                        fileUpload.value = '';
+                        processBtn.disabled = true;
+                    });
+                    
+                    previewContainer.appendChild(removeAllBtn);
                 }
-                reader.readAsDataURL(file);
+            });
+            
+            // Handle drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
             }
-        }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropZone.classList.add('border-orange-500');
+            }
+            
+            function unhighlight() {
+                dropZone.classList.remove('border-orange-500');
+            }
+            
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    fileUpload.files = files;
+                    
+                    // Trigger the change event to handle the preview
+                    const event = new Event('change');
+                    fileUpload.dispatchEvent(event);
+                }
+            }
+        });
     </script>
 </body>
 </html>
